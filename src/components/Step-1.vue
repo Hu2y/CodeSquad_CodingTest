@@ -5,6 +5,8 @@
     <button @click="nextBtn" :disabled="gameResult">진행</button>
     <div v-show="startView">
       <div v-show="firstHitter">첫 번째 타자가 타석에 입장 했습니다.</div>
+      <p>{{ stat }}</p>
+      <p>{{strike}}S {{ball}}B {{out}}O</p>
    </div>
   </div>
 </template>
@@ -16,6 +18,12 @@ export default {
       gameResult: true, // 진행 버튼 활성화
       startView: false,
       firstHitter : true, // 게임 시작 메시지 
+      stat: '',
+      hitter: ["스트라이크!", "볼!", "안타!", "아웃!"],
+      strike: 0,
+      ball: 0,
+      hits: 0,
+      out: 0,
     }
   },
   methods: {
@@ -25,6 +33,33 @@ export default {
     },
     nextBtn() {
       this.firstHitter = false
+      this.stat = this.hitter[Math.floor(Math.random() * this.hitter.length)]
+      switch (this.stat) {
+        case "스트라이크!":
+          this.strikeFunc();
+          break;
+        case "볼!":
+          this.ballFunc();
+          break;
+        case "안타!":
+          this.hitsFunc();
+          break;
+        case "아웃!":
+          this.outFunc();
+          break;
+      }
+    },
+    strikeFunc() {
+      this.strike += 1
+    },
+    ballFunc() {
+      this.ball += 1
+    },
+    hitsFunc() {
+      this.hits += 1
+    },
+    outFunc() {
+      this.out += 1
     }
   }
 }
