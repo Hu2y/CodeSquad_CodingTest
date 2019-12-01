@@ -31,6 +31,10 @@ export default {
       this.startView = true
       this.gameResult = false
     },
+    initSB() {
+      this.strike = 0
+      this.ball = 0
+    },
     nextBtn() {
       this.firstHitter = false
       this.stat = this.hitter[Math.floor(Math.random() * this.hitter.length)]
@@ -51,15 +55,29 @@ export default {
     },
     strikeFunc() {
       this.strike += 1
+      if(this.strike === 3) {
+        this.out+= 1
+        this.stat = "3스트라이크! 아웃! 다음 타자가 타석에 입장 했습니다."
+        this.initSB()
+      }
     },
     ballFunc() {
       this.ball += 1
+      if(this.ball === 4) {
+        this.hits += 1
+        this.stat = "4볼! 안타! 다음 타자가 타석에 입장 했습니다."
+        this.initSB()
+      }
     },
     hitsFunc() {
       this.hits += 1
+      this.stat = "안타! 다음 타자가 타석에 입장 했습니다."
+      this.initSB()
     },
     outFunc() {
       this.out += 1
+      this.stat = "아웃! 다음 타자가 타석에 입장 했습니다."
+      this.initSB()
     }
   }
 }
