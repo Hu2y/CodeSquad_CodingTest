@@ -34,7 +34,7 @@
         *** {{firstName[0].name}} vs {{secondName[0].name}}의 시합을 시작합니다. ***
         <div v-show="!matchView">
           <!-- 1번팀 공격 -->
-          <div v-if="attacked">
+          <div v-if="isInning">
             <p>{{round}}회초 {{firstName[0].name}}팀 공격</p>
             <p>{{firstTeam[firstOrder].id}}번 {{firstTeam[firstOrder].player}} 선수 차례</p>
           </div>
@@ -111,7 +111,7 @@ export default {
       isInning: true, // 회초 인지 회말인지
       firstOrder: 0, // 첫번째팀 팀 선수 순번을 결정해주는 변수
       secondOrder: 0, // 두번쨰팀 팀 선수 순번을 결정해주는 변수
-      attacked: true, // isInning과 같아서 지울수잇는지 검수
+      // attacked: true, // isInning과 같아서 지울수잇는지 검수
       firstScore: 0,
       secondScore: 0,
       pitcher: 0, // 투구 횟수
@@ -124,8 +124,7 @@ export default {
       this.inputActive = true;
       this.step += 1;
     },
-    teamInfoBtn() {
-      // 팀 정보 뷰 on/off 버튼
+    teamInfoBtn() { // 팀 정보 뷰 on/off 버튼
       this.teamInfoView = !this.teamInfoView;
     },
     inserTeamName() {
@@ -182,8 +181,7 @@ export default {
       this.strike = 0;
       this.ball = 0;
     },
-    orderNum() {
-      // 팀 선수 마지막 선수 차례가 끝나면 처음선수로 돌려주는 함수
+    orderNum() { // 팀 선수 마지막 선수 차례가 끝나면 처음선수로 돌려주는 함수
       if (this.isInning) {
         this.firstOrder += 1; // 첫번째팀 다음선수로 넘겨주는 로직
         if (this.firstOrder >= 9) this.firstOrder = 0; // 첫번째팀 마지막선수면 처음천수로
@@ -200,8 +198,7 @@ export default {
         h = this.secondTeam[this.secondOrder].ba
       }
       var a = Math.random()
-      parseFloat(h)
-      // console.log("주사위:",a, "타율:",h)
+      parseFloat(h) 
       if(a <= 0.1) {
         this.stat = "아웃!"
       } else if(a <= h) {
@@ -235,11 +232,9 @@ export default {
         this.orderNum();
         if (this.out == 3) {
           this.stat = "스트라이크 아웃!";
-          if (!this.isInning) {
-            // 회말에 3아웃이 됫으면 다음 회로
+          if (!this.isInning) { // 회말에 3아웃이 됫으면 다음 회로
             this.round += 1;
-          }
-          this.attacked = !this.attacked; // 3아웃되면 각 팀 뷰로 바뀌게   <<< 여기추가
+          } // this.attacked = !this.attacked; // 3아웃되면 각 팀 뷰로 바뀌게   <<< 여기추가
           this.out = 0; // 아웃 초기화
           this.hits = 0; // 안타수 초기화 (한회에 4안타마다 1점이 올라가기떄문에, 한회가 끝나면 초기화 , 나중에 안타수는 따로 누적해줘야될듯)
           console.log(this.round);
@@ -258,8 +253,7 @@ export default {
         this.strike = 0;
         this.ball = 0;
         this.hits += 1;
-        if (this.hits >= 4) {
-          // 4안타 이상일떄 득점
+        if (this.hits >= 4) { // 4안타 이상일떄 득점
           if (this.isInning) {
             this.firstScore += 1; // 회초 이면 첫번쨰팀 점수 +1
           } else {
@@ -273,8 +267,7 @@ export default {
       this.strike = 0;
       this.ball = 0;
       this.hits += 1;
-      if (this.hits >= 4) {
-        // 4안타 이상일떄 득점
+      if (this.hits >= 4) { // 4안타 이상일떄 득점
         if (this.isInning) {
           this.firstScore += 1; // 회초 이면 첫번쨰팀 점수 +1
         } else {
@@ -289,9 +282,7 @@ export default {
       this.orderNum();
       if (this.out == 3) {
         this.stat = "아웃!"; // 상대선수로 넘기거나, 마지막 회말이면 게임종료
-        this.attacked = !this.attacked; // 3아웃되면 각 팀 뷰로 바뀌게   <<< 여기추가
-        if (!this.isInning) {
-          // 회말에 3아웃이 됫으면 다음 회로
+        if (!this.isInning) { // 회말에 3아웃이 됫으면 다음 회로
           this.round += 1; 
         }
         this.out = 0; // 아웃 초기화
