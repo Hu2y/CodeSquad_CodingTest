@@ -7,7 +7,11 @@
       <div v-show="firstHitter">첫 번째 타자가 타석에 입장 했습니다.</div>
       <p>{{ stat }}</p>
       <p>{{strike}}S {{ball}}B {{out}}O</p>
-   </div>
+    </div>
+    <div v-show="endGame">
+      <p>최종 안타수: {{hits}}</p> 
+      <span>GAME OVER</span>
+    </div>
   </div>
 </template>
 
@@ -16,8 +20,9 @@ export default {
   data() {
     return {
       gameResult: true, // 진행 버튼 활성화
-      startView: false,
-      firstHitter : true, // 게임 시작 메시지 
+      startView: false, // 게임 시작 뷰
+      firstHitter: true, // 게임 시작 메시지 
+      endGame: false, // 게임 종료 후 뷰
       stat: '',
       hitter: ["스트라이크!", "볼!", "안타!", "아웃!"],
       strike: 0,
@@ -67,6 +72,11 @@ export default {
         this.hits += 1
         this.stat = "4볼! 안타! 다음 타자가 타석에 입장 했습니다."
         this.initSB()
+        if(this.out === 3) {
+          this.stat = "스트라이크 아웃!";
+          this.endGame = true
+          this.gameResult = true
+        }
       }
     },
     hitsFunc() {
@@ -78,6 +88,11 @@ export default {
       this.out += 1
       this.stat = "아웃! 다음 타자가 타석에 입장 했습니다."
       this.initSB()
+      if(this.out === 3) {
+        this.stat = "스트라이크 아웃!";
+        this.endGame = true
+        this.gameResult = true
+      }
     }
   }
 }
