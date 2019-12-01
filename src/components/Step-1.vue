@@ -1,7 +1,7 @@
 <template>
   <div>
     <h1>Step-1</h1>
-    <button @click="startBtn">게임시작</button>
+    <button @click="startBtn" :disabled="startResult">게임시작</button>
     <button @click="nextBtn" :disabled="gameResult">진행</button>
     <div v-show="startView">
       <div v-show="firstHitter">첫 번째 타자가 타석에 입장 했습니다.</div>
@@ -11,6 +11,7 @@
     <div v-show="endGame">
       <p>최종 안타수: {{hits}}</p> 
       <span>GAME OVER</span>
+      <button @click="restart">다시 시작</button>
     </div>
   </div>
 </template>
@@ -19,6 +20,7 @@
 export default {
   data() {
     return {
+      startResult: false,
       gameResult: true, // 진행 버튼 활성화
       startView: false, // 게임 시작 뷰
       firstHitter: true, // 게임 시작 메시지 
@@ -35,10 +37,18 @@ export default {
     startBtn() {
       this.startView = true
       this.gameResult = false
+      this.startResult = true
     },
     initSB() {
       this.strike = 0
       this.ball = 0
+    },
+    initGame() {
+      this.strike = 0,
+      this.ball = 0,
+      this.hits = 0,
+      this.out = 0,
+      this.stat = ""
     },
     nextBtn() {
       this.firstHitter = false
@@ -68,16 +78,23 @@ export default {
     },
     ballFunc() {
       this.ball += 1
-      if(this.ball === 4) {
-        this.hits += 1
-        this.stat = "4볼! 안타! 다음 타자가 타석에 입장 했습니다."
-        this.initSB()
-        if(this.out === 3) {
-          this.stat = "스트라이크 아웃!";
-          this.endGame = true
-          this.gameResult = true
-        }
-      }
+      this.ball === 4 ? 
+        (this.out === 3 ? 
+          (this.stat = "스트라이크 아웃!",
+          this.endGame = true,
+          this.gameResult = true) : 
+          (this.hits += 1, this.stat = "4볼! 안타! 다음 타자가 타석에 입장 했습니다.", this.initSB())
+        ) : null
+      // if(this.ball === 4) {
+      //   this.hits += 1
+      //   this.stat = "4볼! 안타! 다음 타자가 타석에 입장 했습니다."
+      //   this.initSB()
+      //   if(this.out === 3) {
+      //     this.stat = "스트라이크 아웃!"
+      //     this.endGame = true
+      //     this.gameResult = true
+      //   }
+      // }
     },
     hitsFunc() {
       this.hits += 1
@@ -93,6 +110,11 @@ export default {
         this.endGame = true
         this.gameResult = true
       }
+    },
+    restart() {
+      this.initGame()
+      this.endGame = false
+      this.gameResult = false
     }
   }
 }
