@@ -164,7 +164,7 @@ export default {
       this.secondTeam.push({
         id: this.playerCount,
         player: this.name,
-        ba: this.batting
+        ba: parseFloat(this.batting).toFixed(3) // 소수점 3자리까지 자르기
       });
       this.name = "";
       this.batting = "";
@@ -193,7 +193,24 @@ export default {
       }
     },
     nextBtn() {
-      this.stat = this.hitter[Math.floor(Math.random() * this.hitter.length)];
+      var h = 0
+      if(this.isInning) { // 회초인지 회말인지 판단으로 1, 2팀 선택 후 각선수 타율 가져오기 
+        h = this.firstTeam[this.firstOrder].ba
+      } else {
+        h = this.secondTeam[this.secondOrder].ba
+      }
+      var a = Math.random()
+      parseFloat(h)
+      // console.log("주사위:",a, "타율:",h)
+      if(a <= 0.1) {
+        this.stat = "아웃!"
+      } else if(a <= h) {
+        this.stat = "안타!"
+      } else if((a <= 1-h-0.1)/2) {
+        this.stat = "볼!"
+      } else {
+        this.stat = "스트라이크!"
+      }
       switch (this.stat) {
         case "스트라이크!":
           this.strikeFunc();
