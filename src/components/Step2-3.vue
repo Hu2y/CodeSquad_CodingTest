@@ -401,7 +401,7 @@ export default {
         this.hits = 0; // 안타수 초기화 (한회에 4안타마다 1점이 올라가기떄문에, 한회가 끝나면 초기화
         this.isInning = !this.isInning; // 회말인지 회초인지 체크
         if(!this.isInning && this.round == 6 && (this.secondScore > this.firstScore)) this.matchView = !this.matchView;
-        if (!this.isInning && this.round == 7) this.matchView = !this.matchView;
+        if (this.isInning && this.round == 7) this.matchView = !this.matchView;
       }
     },
     randomFunc() {
