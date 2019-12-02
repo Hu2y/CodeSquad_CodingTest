@@ -22,15 +22,12 @@
         <button @click.prevent="saveInfo">입력</button>
       </form>
     </div>
-
     <div v-if="step===3">
       <p>팀입력이 완료되었습니다.</p>
       <button @click="startBtn">게임시작</button>
       <!-- 경기가 시작될떄 보일 뷰 -->
       <div v-show="playView">
-        <p>
-          <button :disabled="matchView" @click="nextBtn">진행</button>
-        </p>
+        <p><button :disabled="matchView" @click="nextBtn">진행</button></p>
         *** {{firstName[0].name}} vs {{secondName[0].name}}의 시합을 시작합니다. ***
         <div v-show="!matchView">
           <!-- 1번팀 공격 -->
@@ -76,6 +73,55 @@
           <p>타율 : {{f.ba}}</p>
         </li>
       </ul>
+    </div> <hr />
+
+    <div>
+      <h1>Step-3</h1>
+      <div class="container">
+        <table class="type11">
+          <thead>
+            <tr>
+              <th scope="cols"></th>
+              <th scope="cols">1회 2회 3회 4회 5회 6회</th>
+              <th scope="cols">점수 현황</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="cols">1팀 정보 넣기</th>
+              <th scope="cols">0---0---0---0---0---0</th>
+              <th scope="cols">총점수</th>
+            </tr>
+            <tr>
+              <th scope="cols">2팀 정보 넣기</th>
+              <th scope="cols">0---0---0---0---0---0</th>
+              <th scope="cols">총점수</th>
+            </tr>
+            <tr>
+              <td>1팀 선수단</td>
+              <td>
+                <p>S : 0</p>
+                <p>B : 0</p>
+                <p>O : 0</p>
+              </td>
+              <td>2팀 선수단</td>
+            </tr>
+            <tr>
+              <td>
+                <p>투구수 : 0</p>
+                <p>삼진수 : 0</p>
+                <p>안타수 : 0</p>
+              </td>
+              <td></td>
+              <td>
+                <p>투구수 : 0</p>
+                <p>삼진수 : 0</p>
+                <p>안타수 : 0</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>
@@ -310,5 +356,31 @@ input::-webkit-inner-spin-button {
 
 input[type="number"] {
   -moz-appearance: textfield; /* Firefox */
+}
+
+table.type11 {
+  border-collapse: separate;
+  border-spacing: 1px;
+  text-align: center;
+  line-height: 1.5;
+  margin: 20px 10px;
+}
+table.type11 th {
+  width: 200px;
+  padding: 10px;
+  font-weight: bold;
+  vertical-align: top;
+  color: #fff;
+  background: #ce4869;
+}
+table.type11 td {
+  width: 155px;
+  padding: 10px;
+  vertical-align: top;
+  border-bottom: 1px solid #ccc;
+  background: #eee;
+}
+p {
+  margin: 2px 0px;
 }
 </style>
