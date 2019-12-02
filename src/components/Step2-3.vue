@@ -137,6 +137,11 @@
         </table>
       </div>
     </div>
+    <p>스킵할 회를 입력해주세요(ex 4 -> 5회초부터시작)</p>
+    <input type="number" v-model="skipNum" min="1" max="6" style="width: 100px" placeholder="스킵 할 회 입력">
+    <button :disabled="skipBtn" id="skip" @click="skipFunc">Skip</button>
+    <small>(팀정보 입력이 완료되야 버튼이 활성화 됩니다)</small>
+    <p>스킵후 위 스텝에서 진행버튼을 눌려주세요.</p>
   </div>
 </template>
 
@@ -178,7 +183,9 @@ export default {
       firstpitching: 0, // 1팀 총 투구수 
       secondPitching: 0, // 2팀 총 투구수 ,
       so: {fso: 0, sso: 0}, // 각팀 삼진 수
-      teamHits: {fhits: 0, shits: 0} // 각팀 안타수 
+      teamHits: {fhits: 0, shits: 0}, // 각팀 안타수,
+      skipBtn: true,
+      skipNum: 0
     };
   },
   methods: {
@@ -239,6 +246,7 @@ export default {
     // 게임 구현 부분 메서드
     startBtn() {
       this.playView = true;
+      this.skipBtn = false; // 스킵 버튼 활성화
     },
     init() {
       this.strike = 0;
@@ -362,6 +370,14 @@ export default {
       }
       this.strike = 0;
       this.ball = 0;
+    },
+    skipFunc() {
+      while(this.round <= this.skipNum) {
+        console.log('스킵호출되엇다.',this.round, this.skipNum)
+        // (function(){document.getElementById('skip').click()})()
+        this.nextBtn()
+      }
+      this.skipBtn= true
     }
   }
 };
