@@ -89,12 +89,26 @@
           <tbody>
             <tr>
               <th scope="cols">{{firstName[0].name}}</th>
-              <th scope="cols">0---0---0---0---0---0</th>
+              <th scope="cols">
+                {{this.fRoundScore[0]}}---
+                {{this.fRoundScore[1]}}---
+                {{this.fRoundScore[2]}}---
+                {{this.fRoundScore[3]}}---
+                {{this.fRoundScore[4]}}---
+                {{this.fRoundScore[5]}}
+              </th>
               <th scope="cols">{{this.firstScore}}</th>
             </tr>
             <tr>
               <th scope="cols">{{secondName[0].name}}</th>
-              <th scope="cols">0---0---0---0---0---0</th>
+              <th scope="cols">
+                {{this.sRoundScore[0]}}---
+                {{this.sRoundScore[1]}}---
+                {{this.sRoundScore[2]}}---
+                {{this.sRoundScore[3]}}---
+                {{this.sRoundScore[4]}}---
+                {{this.sRoundScore[5]}}
+              </th>
               <th scope="cols">{{this.secondScore}}</th>
             </tr>
             <tr>
@@ -107,9 +121,9 @@
                 </ul>
               </td>
               <td>
-                <p>S : {{strike}}</p>
-                <p>B : {{ball}}</p>
-                <p>O : {{out}}</p>
+                <p>S : {{sImage}}</p>
+                <p>B : {{bImage}}</p>
+                <p>O : {{oImage}}</p>
               </td>
               <td>
                 <ul>
@@ -185,7 +199,13 @@ export default {
       so: {fso: 0, sso: 0}, // 각팀 삼진 수
       teamHits: {fhits: 0, shits: 0}, // 각팀 안타수,
       skipBtn: true,
-      skipNum: 0
+      skipNum: 0,
+      teamScore: {fScore: 0, sScore: 0}, // 각팀 라운드 스코어 
+      fRoundScore: [0,0,0,0,0,0],
+      sRoundScore: [0,0,0,0,0,0],
+      sImage: "",
+      bImage: "",
+      oImage: "",
     };
   },
   methods: {
@@ -283,15 +303,18 @@ export default {
       switch (this.stat) {
         case "스트라이크!":
           this.strikeFunc();
+          this.inItImage()
           break;
         case "볼!":
           this.ballFunc();
+          this.inItImage()
           break;
         case "안타!":
           this.hitsFunc();
           break;
         case "아웃!":
           this.outFunc();
+          this.inItImage()
           break;
       }
     },
@@ -301,16 +324,22 @@ export default {
         this.out += 1;
         this.stat = "3스트라이크! 아웃! 다음 타자가 타석에 입장 했습니다.";
         this.strike = 0;
+        this.ball = 0;
         this.orderNum();
         this.isInning ? this.so.fso += 1 : this.so.sso += 1 // 3스트 일때 각팀 삼진수 누적
         if (this.out == 3) {
           this.stat = "스트라이크 아웃!";
+          this.teamScore.fScore = 0 // 1팀 라운드 점수 초기화
+          this.teamScore.sScore = 0 // 2팀 라운드 점수 초기화
           if (!this.isInning) { // 회말에 3아웃이 됫으면 다음 회로
             this.round += 1;
           } // this.attacked = !this.attacked; // 3아웃되면 각 팀 뷰로 바뀌게   <<< 여기추가
           this.out = 0; // 아웃 초기화
           this.hits = 0; // 안타수 초기화 (한회에 4안타마다 1점이 올라가기떄문에, 한회가 끝나면 초기화 , 나중에 안타수는 따로 누적해줘야될듯)
           console.log(this.round);
+          if(!this.isInning && this.round == 6 && (this.secondScore > this.firstScore)) {
+            this.matchView = !this.matchView;
+          }
           if (!this.isInning && this.round == 7) {
             this.matchView = !this.matchView;
           }
@@ -330,8 +359,12 @@ export default {
         if (this.hits >= 4) { // 4안타 이상일떄 득점
           if (this.isInning) {
             this.firstScore += 1; // 회초 이면 첫번쨰팀 점수 +1
+            this.teamScore.fScore+= 1
+            this.fRoundScore[this.round-1] = this.teamScore.fScore // 1팀 각 라운드 스코어 계산
           } else {
             this.secondScore += 1; // 회말이면 두번째팀 점수 +1
+            this.teamScore.sScore+= 1
+            this.sRoundScore[this.round-1] = this.teamScore.sScore // 2팀 각 라운드 스코어 계산
           }
         }
       }
@@ -345,8 +378,12 @@ export default {
       if (this.hits >= 4) { // 4안타 이상일떄 득점
         if (this.isInning) {
           this.firstScore += 1; // 회초 이면 첫번쨰팀 점수 +1
+          this.teamScore.fScore+= 1
+          this.fRoundScore[this.round-1] = this.teamScore.fScore // 1팀 각 라운드 스코어 계산
         } else {
           this.secondScore += 1; // 회말이면 두번째팀 점수 +1
+          this.teamScore.sScore+= 1
+          this.sRoundScore[this.round-1] = this.teamScore.sScore // 2팀 각 라운드 스코어 계산
         }
       }
       this.orderNum();
@@ -357,12 +394,16 @@ export default {
       this.orderNum();
       if (this.out == 3) {
         this.stat = "아웃!"; // 상대선수로 넘기거나, 마지막 회말이면 게임종료
+        this.teamScore.fScore = 0 // 1팀 라운드 점수 초기화
+        this.teamScore.sScore = 0 // 2팀 라운드 점수 초기화
         if (!this.isInning) { // 회말에 3아웃이 됫으면 다음 회로
           this.round += 1; 
         }
         this.out = 0; // 아웃 초기화
-        this.hits = 0; // 안타수 초기화 (한회에 4안타마다 1점이 올라가기떄문에, 한회가 끝나면 초기화 , 나중에 안타수는 따로 누적해줘야될듯)
-        console.log(this.round);
+        this.hits = 0; // 안타수 초기화 (한회에 4안타마다 1점이 올라가기떄문에, 한회가 끝나면 초기화
+        if(!this.isInning && this.round == 6 && (this.secondScore > this.firstScore)) {
+          this.matchView = !this.matchView;
+        }
         if (!this.isInning && this.round == 7) {
           this.matchView = !this.matchView;
         }
@@ -378,7 +419,29 @@ export default {
         this.nextBtn()
       }
       this.skipBtn= true
+    },
+    sboView(value) {
+      switch (value) {
+        case 0:
+          return ""
+          break;
+        case 1:
+          return "X"
+          break;
+        case 2:
+          return "X-X"
+          break;
+        case 3:
+          return "X-X-X"
+          break;
+      }
+    },
+    inItImage() {
+      this.sImage = this.sboView(this.strike)
+      this.bImage = this.sboView(this.ball)
+      this.oImage = this.sboView(this.out)
     }
+
   }
 };
 </script>
