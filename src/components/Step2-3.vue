@@ -88,35 +88,49 @@
           </thead>
           <tbody>
             <tr>
-              <th scope="cols">1팀 정보 넣기</th>
+              <th scope="cols">{{firstName[0].name}}</th>
               <th scope="cols">0---0---0---0---0---0</th>
-              <th scope="cols">총점수</th>
+              <th scope="cols">{{this.firstScore}}</th>
             </tr>
             <tr>
-              <th scope="cols">2팀 정보 넣기</th>
+              <th scope="cols">{{secondName[0].name}}</th>
               <th scope="cols">0---0---0---0---0---0</th>
-              <th scope="cols">총점수</th>
+              <th scope="cols">{{this.secondScore}}</th>
             </tr>
             <tr>
-              <td>1팀 선수단</td>
               <td>
-                <p>S : 0</p>
-                <p>B : 0</p>
-                <p>O : 0</p>
+                <ul>
+                  {{firstName[0].name}} 팀
+                  <li v-for="fteam in firstTeam" :key="fteam.id">
+                    <span>{{fteam.id}}. {{fteam.player}}</span>
+                  </li>
+                </ul>
               </td>
-              <td>2팀 선수단</td>
+              <td>
+                <p>S : {{strike}}</p>
+                <p>B : {{ball}}</p>
+                <p>O : {{out}}</p>
+              </td>
+              <td>
+                <ul>
+                  {{secondName[0].name}} 팀
+                  <li v-for="steam in secondTeam" :key="steam.id">
+                    <span>{{steam.id}}. {{steam.player}}</span>
+                  </li>
+                </ul>
+              </td>
             </tr>
             <tr>
               <td>
-                <p>투구수 : 0</p>
-                <p>삼진수 : 0</p>
-                <p>안타수 : 0</p>
+                <p>투구수 : {{firstpitching}}</p>
+                <p>삼진수 : {{so.fso}}</p>
+                <p>안타수 : {{teamHits.fhits}}</p>
               </td>
               <td></td>
               <td>
-                <p>투구수 : 0</p>
-                <p>삼진수 : 0</p>
-                <p>안타수 : 0</p>
+                <p>투구수 : {{secondPitching}}</p>
+                <p>삼진수 : {{so.sso}}</p>
+                <p>안타수 : {{teamHits.shits}}</p>
               </td>
             </tr>
           </tbody>
@@ -137,8 +151,8 @@ export default {
       teamInfoView: false, // 팀 정보 뷰
       teamNumber: 1, // 1, 2팀 정하는 넘버
       teamName: "", // input 팀명 정하는 v-model
-      firstName: [], // 첫번째 팀 이름
-      secondName: [], //두번째 팀 이름,
+      firstName: [{name: '1팀'}], // 첫번째 팀 이름
+      secondName: [{name: '2팀'}], //두번째 팀 이름,
       playerCount: 1, // 등록된 선수 수,
       firstTeam: [],
       secondTeam: [],
@@ -146,22 +160,25 @@ export default {
       batting: "", // 입력폼 타율
       //게임 구현부분 변수
       playView: false,
+      matchView: false,
+      isInning: true, // 회초 인지 회말인지
       hitter: ["스트라이크!", "볼!", "안타!", "아웃!"],
       stat: "",
       strike: 0,
       ball: 0,
       hits: 0,
       out: 0,
-      matchView: false,
       round: 1,
-      isInning: true, // 회초 인지 회말인지
       firstOrder: 0, // 첫번째팀 팀 선수 순번을 결정해주는 변수
       secondOrder: 0, // 두번쨰팀 팀 선수 순번을 결정해주는 변수
       // attacked: true, // isInning과 같아서 지울수잇는지 검수
       firstScore: 0,
       secondScore: 0,
-      pitcher: 0, // 투구 횟수
-      strikeOut: 0 // 삼진 횟수
+      strikeOut: 0, // 삼진 횟수
+      firstpitching: 0, // 1팀 총 투구수 
+      secondPitching: 0, // 2팀 총 투구수 ,
+      so: {fso: 0, sso: 0}, // 각팀 삼진 수
+      teamHits: {fhits: 0, shits: 0} // 각팀 안타수 
     };
   },
   methods: {
@@ -174,9 +191,9 @@ export default {
       this.teamInfoView = !this.teamInfoView;
     },
     inserTeamName() {
-      this.firstName.length
-        ? (this.secondName.push({ name: this.teamName }), this.step += 1)
-        : (this.firstName.push({ name: this.teamName }), this.step += 1);
+      this.firstName.length == 2
+        ? (this.secondName.unshift({ name: this.teamName }), this.step += 1)
+        : (this.firstName.unshift({ name: this.teamName }), this.step += 1);
     },
     saveInfo() {
       this.formVal(); // 입력폼 검증
@@ -243,6 +260,7 @@ export default {
       } else {
         h = this.secondTeam[this.secondOrder].ba
       }
+      this.isInning ? this.firstpitching += 1 : this.secondPitching += 1 // 각팀 투구수 총합
       var a = Math.random()
       parseFloat(h) 
       if(a <= 0.1) {
@@ -276,6 +294,7 @@ export default {
         this.stat = "3스트라이크! 아웃! 다음 타자가 타석에 입장 했습니다.";
         this.strike = 0;
         this.orderNum();
+        this.isInning ? this.so.fso += 1 : this.so.sso += 1 // 3스트 일때 각팀 삼진수 누적
         if (this.out == 3) {
           this.stat = "스트라이크 아웃!";
           if (!this.isInning) { // 회말에 3아웃이 됫으면 다음 회로
@@ -299,6 +318,7 @@ export default {
         this.strike = 0;
         this.ball = 0;
         this.hits += 1;
+        this.isInning ? this.teamHits.fhits+= 1 : this.teamHits.shits+= 1 // 4볼일때 각팀 안타수 +1
         if (this.hits >= 4) { // 4안타 이상일떄 득점
           if (this.isInning) {
             this.firstScore += 1; // 회초 이면 첫번쨰팀 점수 +1
@@ -313,6 +333,7 @@ export default {
       this.strike = 0;
       this.ball = 0;
       this.hits += 1;
+      this.isInning ? this.teamHits.fhits+= 1 : this.teamHits.shits+= 1 // 각팀 안타수 +1
       if (this.hits >= 4) { // 4안타 이상일떄 득점
         if (this.isInning) {
           this.firstScore += 1; // 회초 이면 첫번쨰팀 점수 +1
