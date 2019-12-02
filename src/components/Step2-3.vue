@@ -69,7 +69,7 @@
         <span>{{secondName[0].name}} 팀 정보</span>
         <li v-for="f in secondTeam" :key="f.index">
           <p>{{f.id}} 번 타자</p>
-          <p>이름 : {{f.player}}</p>
+          <p>이름 : {{f.player}}</p> 
           <p>타율 : {{f.ba}}</p>
         </li>
       </ul>
@@ -116,7 +116,7 @@
                 <ul>
                   {{firstName[0].name}} 팀
                   <li v-for="fteam in firstTeam" :key="fteam.id">
-                    <span>{{fteam.id}}. {{fteam.player}}</span>
+                    <span>{{fteam.id}}. {{fteam.player}} <span v-if="fcheckNum == fteam.id"> V </span> </span>
                   </li>
                 </ul>
               </td>
@@ -129,21 +129,21 @@
                 <ul>
                   {{secondName[0].name}} 팀
                   <li v-for="steam in secondTeam" :key="steam.id">
-                    <span>{{steam.id}}. {{steam.player}}</span>
+                    <span>{{steam.id}}. {{steam.player}} <span v-if="scheckNum == steam.id"> V </span> </span>
                   </li>
                 </ul>
               </td>
             </tr>
             <tr>
               <td>
-                <p>투구수 : {{firstpitching}}</p>
-                <p>삼진수 : {{so.fso}}</p>
+                <p>피투구수 : {{firstpitching}}</p>
+                <p>피삼진수 : {{so.fso}}</p>
                 <p>안타수 : {{teamHits.fhits}}</p>
               </td>
               <td></td>
               <td>
-                <p>투구수 : {{secondPitching}}</p>
-                <p>삼진수 : {{so.sso}}</p>
+                <p>피투구수 : {{secondPitching}}</p>
+                <p>피삼진수 : {{so.sso}}</p>
                 <p>안타수 : {{teamHits.shits}}</p>
               </td>
             </tr>
@@ -177,7 +177,6 @@ export default {
       secondTeam: [],
       name: "", // 선수 이름
       batting: "", // 입력폼 타율
-      //게임 구현부분 변수
       playView: false,
       matchView: false,
       isInning: true, // 회초 인지 회말인지
@@ -190,7 +189,6 @@ export default {
       round: 1,
       firstOrder: 0, // 첫번째팀 팀 선수 순번을 결정해주는 변수
       secondOrder: 0, // 두번쨰팀 팀 선수 순번을 결정해주는 변수
-      // attacked: true, // isInning과 같아서 지울수잇는지 검수
       firstScore: 0,
       secondScore: 0,
       strikeOut: 0, // 삼진 횟수
@@ -206,6 +204,8 @@ export default {
       sImage: "",
       bImage: "",
       oImage: "",
+      fcheckNum: 1, // 지금 타석에있는 선수 V표시 할 떄 쓸 변수 
+      scheckNum: 1,
     };
   },
   methods: {
@@ -272,7 +272,18 @@ export default {
       this.strike = 0;
       this.ball = 0;
     },
-    orderNum() { // 팀 선수 마지막 선수 차례가 끝나면 처음선수로 돌려주는 함수
+    orderNum() { // 다음선수로, 팀 선수 마지막 선수 끝나면 처음선수로 돌려주는 함수
+      if(this.isInning) { // V표시 로직
+        this.fcheckNum+= 1
+        if(this.fcheckNum==10) {
+          this.fcheckNum=1 
+        }
+      } else {
+        this.scheckNum+=1
+        if(this.scheckNum == 10) {
+          this.scheckNum = 1
+        }
+      }
       if (this.isInning) {
         this.firstOrder += 1; // 첫번째팀 다음선수로 넘겨주는 로직
         if (this.firstOrder >= 9) this.firstOrder = 0; // 첫번째팀 마지막선수면 처음천수로
@@ -282,6 +293,7 @@ export default {
       }
     },
     nextBtn() {
+      console.log(this.firstOrder, this.secondOrder)
       var h = 0
       if(this.isInning) { // 회초인지 회말인지 판단으로 1, 2팀 선택 후 각선수 타율 가져오기 
         h = this.firstTeam[this.firstOrder].ba
@@ -336,7 +348,6 @@ export default {
           } // this.attacked = !this.attacked; // 3아웃되면 각 팀 뷰로 바뀌게   <<< 여기추가
           this.out = 0; // 아웃 초기화
           this.hits = 0; // 안타수 초기화 (한회에 4안타마다 1점이 올라가기떄문에, 한회가 끝나면 초기화 , 나중에 안타수는 따로 누적해줘야될듯)
-          console.log(this.round);
           if(!this.isInning && this.round == 6 && (this.secondScore > this.firstScore)) {
             this.matchView = !this.matchView;
           }
@@ -414,7 +425,6 @@ export default {
     },
     skipFunc() {
       while(this.round <= this.skipNum) {
-        console.log('스킵호출되엇다.',this.round, this.skipNum)
         // (function(){document.getElementById('skip').click()})()
         this.nextBtn()
       }
