@@ -152,7 +152,7 @@
       </div>
     </div>
     <p>스킵할 회를 입력해주세요(ex 4 -> 5회초부터시작)</p>
-    <input type="number" v-model="skipNum" min="1" max="6" style="width: 100px" placeholder="스킵 할 회 입력">
+    <input type="number" v-model="skipNum" style="width: 100px" placeholder="0 < X < 7 범위 입력">
     <button :disabled="skipBtn" id="skip" @click="skipFunc">Skip</button>
     <small>(팀정보 입력이 완료되야 버튼이 활성화 됩니다)</small>
     <p>스킵후 위 스텝에서 진행버튼을 눌려주세요.</p>
@@ -197,7 +197,7 @@ export default {
       so: {fso: 0, sso: 0}, // 각팀 삼진 수
       teamHits: {fhits: 0, shits: 0}, // 각팀 안타수,
       skipBtn: true,
-      skipNum: 0,
+      skipNum: null,
       teamScore: {fScore: 0, sScore: 0}, // 각팀 라운드 스코어 
       fRoundScore: [0,0,0,0,0,0],
       sRoundScore: [0,0,0,0,0,0],
@@ -206,6 +206,7 @@ export default {
       oImage: "",
       fcheckNum: 1, // 지금 타석에있는 선수 V표시 할 떄 쓸 변수 
       scheckNum: 1,
+      batAvg: 0
     };
   },
   methods: {
@@ -273,17 +274,7 @@ export default {
       this.ball = 0;
     },
     orderNum() { // 다음선수로, 팀 선수 마지막 선수 끝나면 처음선수로 돌려주는 함수
-      if(this.isInning) { // V표시 로직
-        this.fcheckNum+= 1
-        if(this.fcheckNum==10) {
-          this.fcheckNum=1 
-        }
-      } else {
-        this.scheckNum+=1
-        if(this.scheckNum == 10) {
-          this.scheckNum = 1
-        }
-      }
+      this.vCheckFunc()
       if (this.isInning) {
         this.firstOrder += 1; // 첫번째팀 다음선수로 넘겨주는 로직
         if (this.firstOrder >= 9) this.firstOrder = 0; // 첫번째팀 마지막선수면 처음천수로
@@ -293,42 +284,10 @@ export default {
       }
     },
     nextBtn() {
-      console.log(this.firstOrder, this.secondOrder)
-      var h = 0
-      if(this.isInning) { // 회초인지 회말인지 판단으로 1, 2팀 선택 후 각선수 타율 가져오기 
-        h = this.firstTeam[this.firstOrder].ba
-      } else {
-        h = this.secondTeam[this.secondOrder].ba
-      }
+      this.baFunc()
       this.isInning ? this.firstpitching += 1 : this.secondPitching += 1 // 각팀 투구수 총합
-      var a = Math.random()
-      parseFloat(h) 
-      if(a <= 0.1) {
-        this.stat = "아웃!"
-      } else if(a <= h) {
-        this.stat = "안타!"
-      } else if((a <= 1-h-0.1)/2) {
-        this.stat = "볼!"
-      } else {
-        this.stat = "스트라이크!"
-      }
-      switch (this.stat) {
-        case "스트라이크!":
-          this.strikeFunc();
-          this.inItImage()
-          break;
-        case "볼!":
-          this.ballFunc();
-          this.inItImage()
-          break;
-        case "안타!":
-          this.hitsFunc();
-          break;
-        case "아웃!":
-          this.outFunc();
-          this.inItImage()
-          break;
-      }
+      this.randomFunc()
+      this.switchHitter()
     },
     strikeFunc() {
       this.strike += 1;
@@ -339,24 +298,9 @@ export default {
         this.ball = 0;
         this.orderNum();
         this.isInning ? this.so.fso += 1 : this.so.sso += 1 // 3스트 일때 각팀 삼진수 누적
-        if (this.out == 3) {
-          this.stat = "스트라이크 아웃!";
-          this.teamScore.fScore = 0 // 1팀 라운드 점수 초기화
-          this.teamScore.sScore = 0 // 2팀 라운드 점수 초기화
-          if (!this.isInning) { // 회말에 3아웃이 됫으면 다음 회로
-            this.round += 1;
-          } // this.attacked = !this.attacked; // 3아웃되면 각 팀 뷰로 바뀌게   <<< 여기추가
-          this.out = 0; // 아웃 초기화
-          this.hits = 0; // 안타수 초기화 (한회에 4안타마다 1점이 올라가기떄문에, 한회가 끝나면 초기화 , 나중에 안타수는 따로 누적해줘야될듯)
-          if(!this.isInning && this.round == 6 && (this.secondScore > this.firstScore)) {
-            this.matchView = !this.matchView;
-          }
-          if (!this.isInning && this.round == 7) {
-            this.matchView = !this.matchView;
-          }
-          this.isInning = !this.isInning; // 회말인지 회초인지 체크
-        }
+        this.out3Func()
       }
+      this.inItImage()
     },
     ballFunc() {
       this.ball += 1;
@@ -367,18 +311,9 @@ export default {
         this.ball = 0;
         this.hits += 1;
         this.isInning ? this.teamHits.fhits+= 1 : this.teamHits.shits+= 1 // 4볼일때 각팀 안타수 +1
-        if (this.hits >= 4) { // 4안타 이상일떄 득점
-          if (this.isInning) {
-            this.firstScore += 1; // 회초 이면 첫번쨰팀 점수 +1
-            this.teamScore.fScore+= 1
-            this.fRoundScore[this.round-1] = this.teamScore.fScore // 1팀 각 라운드 스코어 계산
-          } else {
-            this.secondScore += 1; // 회말이면 두번째팀 점수 +1
-            this.teamScore.sScore+= 1
-            this.sRoundScore[this.round-1] = this.teamScore.sScore // 2팀 각 라운드 스코어 계산
-          }
-        }
+        this.hits4Func()
       }
+      this.inItImage()
     },
     hitsFunc() {
       this.stat = "안타! 다음 타자가 타석에 입장 했습니다.";
@@ -386,49 +321,28 @@ export default {
       this.ball = 0;
       this.hits += 1;
       this.isInning ? this.teamHits.fhits+= 1 : this.teamHits.shits+= 1 // 각팀 안타수 +1
-      if (this.hits >= 4) { // 4안타 이상일떄 득점
-        if (this.isInning) {
-          this.firstScore += 1; // 회초 이면 첫번쨰팀 점수 +1
-          this.teamScore.fScore+= 1
-          this.fRoundScore[this.round-1] = this.teamScore.fScore // 1팀 각 라운드 스코어 계산
-        } else {
-          this.secondScore += 1; // 회말이면 두번째팀 점수 +1
-          this.teamScore.sScore+= 1
-          this.sRoundScore[this.round-1] = this.teamScore.sScore // 2팀 각 라운드 스코어 계산
-        }
-      }
+      this.hits4Func()
       this.orderNum();
     },
     outFunc() {
       this.out += 1;
       this.stat = "아웃! 다음 타자가 타석에 입장 했습니다.";
       this.orderNum();
-      if (this.out == 3) {
-        this.stat = "아웃!"; // 상대선수로 넘기거나, 마지막 회말이면 게임종료
-        this.teamScore.fScore = 0 // 1팀 라운드 점수 초기화
-        this.teamScore.sScore = 0 // 2팀 라운드 점수 초기화
-        if (!this.isInning) { // 회말에 3아웃이 됫으면 다음 회로
-          this.round += 1; 
-        }
-        this.out = 0; // 아웃 초기화
-        this.hits = 0; // 안타수 초기화 (한회에 4안타마다 1점이 올라가기떄문에, 한회가 끝나면 초기화
-        if(!this.isInning && this.round == 6 && (this.secondScore > this.firstScore)) {
-          this.matchView = !this.matchView;
-        }
-        if (!this.isInning && this.round == 7) {
-          this.matchView = !this.matchView;
-        }
-        this.isInning = !this.isInning; // 회말인지 회초인지 체크
-      }
+      this.out3Func()
       this.strike = 0;
       this.ball = 0;
+      this.inItImage()
     },
     skipFunc() {
-      while(this.round <= this.skipNum) {
-        // (function(){document.getElementById('skip').click()})()
-        this.nextBtn()
+      parseInt(this.skipNum)
+      if(this.skipNum <= 0 || this.skipNum >= 7) {
+        alert('범위에 맞는 숫자를 입력해주세요')
+      } else {
+        while(this.round <= this.skipNum) {
+          this.nextBtn()
+        }
+        this.skipBtn= true
       }
-      this.skipBtn= true
     },
     sboView(value) {
       switch (value) {
@@ -450,8 +364,82 @@ export default {
       this.sImage = this.sboView(this.strike)
       this.bImage = this.sboView(this.ball)
       this.oImage = this.sboView(this.out)
+    },
+    vCheckFunc() {
+      if(this.isInning) { // V표시 로직
+        this.fcheckNum+= 1
+        if(this.fcheckNum==10) {
+          this.fcheckNum=1 
+        }
+      } else {
+        this.scheckNum+=1
+        if(this.scheckNum == 10) {
+          this.scheckNum = 1
+        }
+      }
+    },
+    hits4Func() {
+      if (this.hits >= 4) { // 4안타 이상일떄 득점
+        if (this.isInning) {
+          this.firstScore += 1; // 회초 이면 첫번쨰팀 점수 +1
+          this.teamScore.fScore+= 1
+          this.fRoundScore[this.round-1] = this.teamScore.fScore // 1팀 각 라운드 스코어 계산
+        } else {
+          this.secondScore += 1; // 회말이면 두번째팀 점수 +1
+          this.teamScore.sScore+= 1
+          this.sRoundScore[this.round-1] = this.teamScore.sScore // 2팀 각 라운드 스코어 계산
+        }
+      }
+    },
+    out3Func() {
+      if (this.out == 3) {
+        this.stat = "아웃!"; // 상대선수로 넘기거나, 마지막 회말이면 게임종료
+        this.teamScore.fScore = 0 // 1팀 라운드 점수 초기화
+        this.teamScore.sScore = 0 // 2팀 라운드 점수 초기화
+        if (!this.isInning) this.round += 1; // 회말에 3아웃이 됫으면 다음 회로
+        this.out = 0; // 아웃 초기화
+        this.hits = 0; // 안타수 초기화 (한회에 4안타마다 1점이 올라가기떄문에, 한회가 끝나면 초기화
+        this.isInning = !this.isInning; // 회말인지 회초인지 체크
+        if(!this.isInning && this.round == 6 && (this.secondScore > this.firstScore)) this.matchView = !this.matchView;
+        if (!this.isInning && this.round == 7) this.matchView = !this.matchView;
+      }
+    },
+    randomFunc() {
+      var a = Math.random()
+      parseFloat(this.batAvg) 
+      if(a <= 0.1) {
+        this.stat = "아웃!"
+      } else if(a <= this.batAvg) {
+        this.stat = "안타!"
+      } else if((a <= 1-this.batAvg-0.1)/2) {
+        this.stat = "볼!"
+      } else {
+        this.stat = "스트라이크!"
+      }
+    },
+    switchHitter() {
+      switch (this.stat) {
+        case "스트라이크!":
+          this.strikeFunc();
+          break;
+        case "볼!":
+          this.ballFunc();
+          break;
+        case "안타!":
+          this.hitsFunc();
+          break;
+        case "아웃!":
+          this.outFunc();
+          break;
+      }
+    },
+    baFunc() {
+      if(this.isInning) { // 회초인지 회말인지 판단으로 1, 2팀 선택 후 각선수 타율 가져오기 
+        this.batAvg = this.firstTeam[this.firstOrder].ba
+      } else {
+        this.batAvg = this.secondTeam[this.secondOrder].ba
+      }
     }
-
   }
 };
 </script>
@@ -459,9 +447,8 @@ export default {
 <style>
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
-  /* display: none; <- Crashes Chrome on hover */
   -webkit-appearance: none;
-  margin: 0; /* <-- Apparently some margin are still there even though it's hidden */
+  margin: 0;
 }
 
 input[type="number"] {
