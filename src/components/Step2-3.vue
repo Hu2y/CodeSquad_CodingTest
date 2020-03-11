@@ -218,7 +218,7 @@ export default {
     teamInfoBtn() { // 팀 정보 뷰 on/off 버튼
       this.teamInfoView = !this.teamInfoView;
     },
-    inserTeamName() {
+    inserTeamName() { // 팀명 입력
       this.firstName.length == 2
         ? (this.secondName.unshift({ name: this.teamName }), this.step += 1)
         : (this.firstName.unshift({ name: this.teamName }), this.step += 1);
@@ -226,7 +226,7 @@ export default {
     saveInfo() {
       this.formVal(); // 입력폼 검증
     },
-    formVal() {
+    formVal() { // 타율 팀 선수 입력 검증
       if (this.batting <= 0.1 || this.batting >= 0.5 || "" || this.name == "") {
         alert("입력값이 잘못되었습니다.");
       } else if (this.firstTeam.length < 9) {
@@ -235,7 +235,7 @@ export default {
         this.secondInsert();
       }
     },
-    firstInsert() {
+    firstInsert() { // 첫번째팀 입력
       this.firstTeam.push({
         id: this.playerCount,
         player: this.name,
@@ -250,7 +250,7 @@ export default {
         this.teamNumber = 2;
       }
     },
-    secondInsert() {
+    secondInsert() { // 두번째팀 입력
       this.secondTeam.push({
         id: this.playerCount,
         player: this.name,
@@ -283,7 +283,7 @@ export default {
         if (this.secondOrder >= 9) this.secondOrder = 0;
       }
     },
-    nextBtn() {
+    nextBtn() { // 진행버튼
       this.baFunc()
       this.isInning ? this.firstpitching += 1 : this.secondPitching += 1 // 각팀 투구수 총합
       this.randomFunc()
@@ -333,7 +333,7 @@ export default {
       this.ball = 0;
       this.inItImage()
     },
-    skipFunc() {
+    skipFunc() { // 회차 스킵 
       parseInt(this.skipNum)
       if(this.skipNum <= 0 || this.skipNum >= 7) {
         alert('범위에 맞는 숫자를 입력해주세요')
